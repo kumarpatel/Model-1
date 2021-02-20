@@ -51,7 +51,7 @@ class IncuversPiLink {
         char* msgLenText = strtok(stringCRC, "~");
         int msgLen =  atoi(msgLenText);
 
-        if (msgLen > 0 && msgLen <= MAX_PAYLOAD_SIZE && strLen == (msgLen + strlen(msgLenText) + 11)) {
+        if (msgLen > 0 && msgLen <= MAX_PAYLOAD_SIZE && strLen == (msgLen + 11)) {
           char* includedCRC = strtok(NULL, "$");
           char* payload = strtok(NULL, "$"); // dump the rest of the message into this variable in order to computer the CRC
           char* ignoredData = strtok(stringRead, "$"); // return to the same location in the string in order to extract the parameters
@@ -215,6 +215,8 @@ class IncuversPiLink {
     }
 
     void DoTick() {
+
+      Serial.println("WRONG IncuversPiLink class. Set USE_2560 to true.");delay(50);
     }
 
 };

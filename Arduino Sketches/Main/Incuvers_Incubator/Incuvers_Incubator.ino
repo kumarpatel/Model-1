@@ -65,21 +65,21 @@
 
 
 // Where to find our RaspberryPi; "Serial1" for header interface, "Serial" for USB connection
-#define PILINK_SERIALHANDLE Serial1
+#define PILINK_SERIALHANDLE Serial
 // If using the USB connection for PILINK, comment out both of the following.  If using PiHeader but don't want the serial spam, only comment out the second line
-#define SERIALPILINKSETTINGS 9600, SERIAL_8N1
+#define SERIALPILINKSETTINGS 9600 //, SERIAL_8N1
 #define SHOWSERIALSTATUS true
 
 // Debugging definitions, comment out to disable
 //#define DEBUG_GENERAL true
-//#define DEBUG_SERIAL true
+#define DEBUG_SERIAL false
 //#define DEBUG_EEPROM true
 //#define DEBUG_UI true
 //#define DEBUG_EM true
 //#define DEBUG_CO2 true
 //#define DEBUG_O2 true
 //#define DEBUG_TEMP true
-#define DEBUG_PILINK true
+#define DEBUG_PILINK false
 //#define DEBUG_LIGHT true
 //#define DEBUG_MEMORY true
 
@@ -88,7 +88,7 @@
 //#define INCLUDE_O2_MODBUS true
 //#define INCLUDE_O2_ANALOG true
 #define INCLUDE_CO2 true
-//#define INCLUDE_LIGHT true
+#define INCLUDE_LIGHT false
 
 // Hardwired settings
 #define PINASSIGN_ONEWIRE_BUS 4
@@ -183,7 +183,7 @@ void setup() {
   
   iCO2 = new IncuversCO2System();
   iSettings->AttachIncuversModule(iCO2);
-  
+
   iO2 = new IncuversO2System();
   iSettings->AttachIncuversModule(iO2);
 
