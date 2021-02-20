@@ -10,6 +10,15 @@ import threading
 import time
 import fcntl
 import commands
+from tabulate import tabulate
+
+# SERIAL_PORT = '/dev/ttyUSB0'
+SERIAL_PORT = "/dev/cu.usbmodem101"
+DELAY = 4 # This is the time in seconds to wait between each loop.
+PARAMS_UPDATE = [
+    { "CP": 1000 },
+    { "SS": 1 },
+]
 
 """
 .. module:: Message
@@ -66,7 +75,7 @@ class ArduinoDirectiveHandler():
                 arduino_command_string = arduino_command_string + \
                     param + "|" + str(self.queuedictionary[param])
         commandLen = len(arduino_command_string)
-        arduino_command_string = arduino_command_string + "\r"
+        arduino_command_string = arduino_command_string
         calcCRC = binascii.crc32(arduino_command_string.encode()) & 0xFFFFFFFF
         
         arduino_command_string = str(commandLen) + "~" + format(calcCRC,
@@ -131,7 +140,18 @@ class ArduinoDirectiveHandler():
         cmd_string = self.get_arduino_command_string()
         self.clear_queue()
         return cmd_string
+    
+    def get_arduino_update_command_string(self, key, value):
+        self.clear_queue()
+        self.enqueue_parameter_update(key, value)
+        cmd_string = self.get_arduino_command_string()
+        self.clear_queue()
+        return cmd_string
 
+    def add_param_to_queue(self, key, value):
+        self.enqueue_parameter_update(key, value)
+        cmd_string = self.get_arduino_command_string()
+        return cmd_string
 
 class Interface():
     """ Class that holds everything important concerning communication.
@@ -150,7 +170,7 @@ class Interface():
 
           None
         '''
-        self.serial_connection = serial.Serial(port='/dev/serial0', baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, xonxoff=False, rtscts=False, dsrdtr=False)
+        self.serial_connection = serial.Serial(port=SERIAL_PORT, baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, xonxoff=False, rtscts=False, dsrdtr=False)
 
     def connects_to_internet(self, host="8.8.8.8", port=53, timeout=3):
         """ Tests internet connectivity
@@ -169,7 +189,7 @@ class Interface():
             socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
             return True
         except Exception as err:
-            print(err.message)
+            print(err)
             return False
 
     def get_serial_number(self):
@@ -270,7 +290,7 @@ class Sensors():
         self.sensorframe = {}
 
         # set verbosity=1 to view more
-        self.verbosity = 1
+        self.verbosity = 0
 
         self.arduino_link = Interface()
 
@@ -309,6 +329,7 @@ class Sensors():
 #            if self.arduino_link.serial_connection.in_waiting:
                 try:
                     line = self.arduino_link.serial_connection.readline().rstrip()
+                    # print(line)
                     if self.checksum_passed(line):
                         if (self.verbosity == 1):
                             print("checksum passed")
@@ -319,7 +340,7 @@ class Sensors():
                             print('Ign: ' + line.decode().rstrip())
                 except BaseException as e:
                     time.sleep(1)
-                    print('Error: ', e)
+                    # print('Error: ', e)
                     # return
 #           else:
  #               print('Waiting... ' + format(self.arduino_link.serial_connection.in_waiting))        
@@ -404,7 +425,7 @@ class Sensors():
             else:
                 self.sensorframe[kvp[0].encode("utf-8")] = kvp[1].encode("utf-8")
         self.sensorframe['Time'] = time.strftime(
-            "%Y-%m-%d %H:%M:%S", time.gmtime())
+            "%H:%M:%S", time.gmtime())
         return
     
     def send_message_to_arduino(self, msg):
@@ -422,13 +443,17 @@ class Sensors():
             time.sleep(1)
             print('Error: ', e)
 
-             
+
+def prettify_data(sensor_data):
+    values = sensor_data.values()
+    headers = sensor_data.keys()
+    print(tabulate([headers, values], tablefmt="presto"))
+    
 
 if __name__ == '__main__':
     print("PySerial version: " + serial.__version__)
 
     test_connections = False
-    test_connections = True
     if test_connections:
         iface = Interface()
         print("Hardware serial number: {}".format(iface.get_serial_number()))
@@ -442,7 +467,7 @@ if __name__ == '__main__':
         print("Has serial connection with Arduino: {}".format(iface.serial_connection.is_open))
         del iface
 
-    test_commandset = True
+    test_commandset = False
     if test_commandset:
         arduino_handler = ArduinoDirectiveHandler()
         mon = Sensors()
@@ -468,6 +493,16 @@ if __name__ == '__main__':
 
         del arduino_handler
 
+
+    def prepare_and_send_message(key, value):
+        mon = Sensors()
+        arduino_handler = ArduinoDirectiveHandler()
+
+        msg = arduino_handler.get_arduino_update_command_string(key, value)
+        print("Sending message: " + msg)
+        mon.send_message_to_arduino(msg)
+
+
     monitor_serial = False
     monitor_serial = True
     if monitor_serial:
@@ -476,9 +511,21 @@ if __name__ == '__main__':
         print("Has serial connection with Arduino: {}".format(
             mon.arduino_link.serial_connection.is_open))
         print("Displaying serial data")
+        
+        
+        loop_index = 0
         while True:
-            time.sleep(5)
+            time.sleep(DELAY)
             # print("trying...")
-            print(mon.sensorframe)
+
+            if loop_index <= 3 or not PARAMS_UPDATE:
+                prettify_data(mon.sensorframe)
+            else:
+                key_value = PARAMS_UPDATE.pop(0)
+                key = key_value.keys()[0]
+                value = key_value[key]
+                prepare_and_send_message(key, value)
+
             # print(mon.arduino_link.serial_connection.readline())
+            loop_index += 1
         del mon
