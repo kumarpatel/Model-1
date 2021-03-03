@@ -62,6 +62,8 @@ struct SettingsStruct {
   long millisOff;
   // Alarm settings
   byte alarmMode;     // 0 = off, 1 = report, 2 = alarm
+  
+  byte CustomSensorMode;       // 0 = off, 1 = read, 2 = maintain
 };
 
 struct VolatileValuesStruct {
@@ -376,7 +378,8 @@ class IncuversSettingsHandler {
                       this->settingsHolder.heatMode,
                       PINASSIGN_FAN,
                       this->settingsHolder.fanMode,
-                      this->settingsHolder.heatSetPoint);
+                      this->settingsHolder.heatSetPoint,
+                      PINASSIGN_CUSTOM_SENSOR);
     }
 
     IncuversHeatingSystem* getHeatModule() {
@@ -441,6 +444,7 @@ class IncuversSettingsHandler {
       piLink = String(piLink + F("&TA|") + String(GetIndicator(incHeat->isAlarmed(), false, false, true)));                                                                                                           // Temperature, alarms
       // CO2 system
       piLink = String(piLink + F("&CM|") + String(this->settingsHolder.CO2Mode, DEC));          // CO2, mode
+      piLink = String(piLink + F("&CustomSensor|") + String(this->settingsHolder.CustomSensorMode, DEC));          // CustomSensor, mode
       piLink = String(piLink + F("&CP|") + String(this->settingsHolder.CO2SetPoint * 100, 0));  // CO2, setpoint
       piLink = String(piLink + F("&CC|") + String(incCO2->getCO2Level() * 100, 0));             // CO2, reading
       piLink = String(piLink + F("&CS|") + GetIndicator(incCO2->isCO2Open(), incCO2->isCO2Stepping(), false, true));  // CO2, status
@@ -455,7 +459,7 @@ class IncuversSettingsHandler {
       piLink = String(piLink + F("&LM|") + String(this->settingsHolder.lightMode, DEC));        // Light Mode
       piLink = String(piLink + F("&LS|") + incLight->GetSerialAPIndicator());                   // Light System
       // Debugging
-      piLink = String(piLink + F("&FM|") + String(freeMemory(), DEC));                          // Free memory
+      piLink = String(piLink + F("&FMEM|") + String(freeMemory(), DEC));                          // Free memory
 
       if (includeCRC) {
         CRC32 crc;
@@ -508,6 +512,12 @@ class IncuversSettingsHandler {
     void setCO2Mode(int mode) {
       this->settingsHolder.CO2Mode = mode;
       this->incCO2->UpdateMode(mode);
+    }
+    void setCustomSensorMode(int mode) {
+      Serial.print("setCustomSensorMode..."); delay(50);
+      Serial.println(mode); delay(50);
+      this->settingsHolder.CustomSensorMode = mode;
+      this->incHeat->UpdateCustomSensorMode(mode);
     }
     
     float getCO2SetPoint() {
@@ -643,7 +653,6 @@ class IncuversSettingsHandler {
     }
 
     boolean HasPiLink() {
-      return settingsHardware.piSupport;
     }
 
     boolean HasLighting() {

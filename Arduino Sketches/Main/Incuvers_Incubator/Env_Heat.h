@@ -7,8 +7,10 @@
 class IncuversHeatingSystem {
   private:
     int pinAssignment_Fan;
+    int pinAssignment_CustomSensor;
     int pinAssignment_OneWire;
     int fanMode;
+    int customSensorMode;
     
     float tempDoor;
     float tempChamber;
@@ -136,7 +138,7 @@ class IncuversHeatingSystem {
   
     
   public:
-    void SetupHeating(int doorPin, int chamberPin, int oneWirePin, byte doorSensorID[8], byte chamberSensorID[8], int heatMode, int fanPin, int fanMode, float tempSetPoint) {
+    void SetupHeating(int doorPin, int chamberPin, int oneWirePin, byte doorSensorID[8], byte chamberSensorID[8], int heatMode, int fanPin, int fanMode, float tempSetPoint, customSensorPin) {
       #ifdef DEBUG_TEMP
         Serial.println(F("Heat::Setup"));
         Serial.println(doorPin);
@@ -210,6 +212,16 @@ class IncuversHeatingSystem {
       } else {
         digitalWrite(this->pinAssignment_Fan, LOW);        // Turn off the Fan
       }
+
+      // Setup CustomSensor
+      this->pinAssignment_CustomSensor = customSensorPin;
+      this->customSensorMode = customSensorMode;
+      pinMode(this->pinAssignment_CustomSensor, OUTPUT);
+      if (this->fanMode == 4) {
+        digitalWrite(this->pinAssignment_CustomSensor, HIGH);       // Turn on the Fan  
+      } else {
+        digitalWrite(this->pinAssignment_CustomSensor, LOW);        // Turn off the Fan
+      }
     }
   
     void SetSetPoint(float tempSetPoint) {
@@ -235,6 +247,15 @@ class IncuversHeatingSystem {
         digitalWrite(this->pinAssignment_Fan, HIGH);       // Turn on the Fan  
       } else {
         digitalWrite(this->pinAssignment_Fan, LOW);        // Turn off the Fan
+      }
+    }
+
+    void UpdateCustomSensorMode(int mode) {
+      this->customSensorMode = mode;
+      if (this->customSensorMode == 4) {
+        digitalWrite(this->pinAssignment_CustomSensor, HIGH);       // Turn on the Fan  
+      } else {
+        digitalWrite(this->pinAssignment_CustomSensor, LOW);        // Turn off the Fan
       }
     }
   

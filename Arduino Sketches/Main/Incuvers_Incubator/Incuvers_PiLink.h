@@ -86,6 +86,11 @@ class IncuversPiLink {
                     Serial.println(F("Requested CO2 set point is outside of min/max"));
 #endif
                   }
+                } else if (strcmp(param, "CustomSensor") == 0) {
+                    this->incSet->setCustomSensorMode(value);
+#ifdef DEBUG_PILINK
+                    Serial.println(F("Requested CustomSensor mode"));
+#endif
                 } else if (strcmp(param, "OP") == 0) {
                   float newO2 = (float)value * 0.01;
                   if (newO2 > OO_MIN && newO2 < OO_MAX) {
@@ -109,6 +114,20 @@ class IncuversPiLink {
                   this->incSet->setWireMAC(valueText);
 #ifdef DEBUG_PILINK
                   Serial.println(F("Updating rPi Wired MAC"));
+#endif
+                } else if (strcmp(param, "FM") == 0) {
+                  Serial.print("FanMode..."); delay(50);
+                  Serial.println(value); delay(50);
+                  this->incSet->setFanMode(value);
+#ifdef DEBUG_PILINK
+                  Serial.println(F("Updating FanMode..."));
+#endif
+                } else if (strcmp(param, "TM") == 0) {
+                  Serial.print("HeatingMode..."); delay(50);
+                  Serial.println(value); delay(50);
+                  this->incSet->setHeatMode(value);
+#ifdef DEBUG_PILINK
+                  Serial.println(F("Updating HeatingMode..."));
 #endif
                 } else if (strcmp(param, "MWF") == 0) {
                   this->incSet->setWifiMAC(valueText);

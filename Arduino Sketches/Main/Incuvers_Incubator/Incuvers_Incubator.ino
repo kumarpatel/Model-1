@@ -95,6 +95,7 @@
 #define PINASSIGN_HEATDOOR 8
 #define PINASSIGN_HEATCHAMBER 9
 #define PINASSIGN_FAN 10
+#define PINASSIGN_CUSTOM_SENSOR 5
 
 // Includes
 // OneWire and DallasTemperature libraries used for reading the heat sensors
