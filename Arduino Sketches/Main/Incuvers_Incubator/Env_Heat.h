@@ -138,7 +138,7 @@ class IncuversHeatingSystem {
   
     
   public:
-    void SetupHeating(int doorPin, int chamberPin, int oneWirePin, byte doorSensorID[8], byte chamberSensorID[8], int heatMode, int fanPin, int fanMode, float tempSetPoint, customSensorPin) {
+    void SetupHeating(int doorPin, int chamberPin, int oneWirePin, byte doorSensorID[8], byte chamberSensorID[8], int heatMode, int fanPin, int fanMode, float tempSetPoint, int customSensorPin) {
       #ifdef DEBUG_TEMP
         Serial.println(F("Heat::Setup"));
         Serial.println(doorPin);
