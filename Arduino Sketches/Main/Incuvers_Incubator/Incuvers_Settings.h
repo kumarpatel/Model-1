@@ -63,7 +63,7 @@ struct SettingsStruct {
   // Alarm settings
   byte alarmMode;     // 0 = off, 1 = report, 2 = alarm
   
-  byte CustomSensorMode;       // 0 = off, 1 = read, 2 = maintain
+  byte customSensorMode;       // 0 = off, 1 = read, 2 = maintain
 };
 
 struct VolatileValuesStruct {
@@ -89,6 +89,7 @@ class IncuversSettingsHandler {
     IncuversLightingSystem* incLight;
     IncuversCO2System* incCO2;
     IncuversO2System* incO2;
+    // CustomSensor* incCustomSensor;
     
     int personalityCount;
 
@@ -379,7 +380,8 @@ class IncuversSettingsHandler {
                       PINASSIGN_FAN,
                       this->settingsHolder.fanMode,
                       this->settingsHolder.heatSetPoint,
-                      PINASSIGN_CUSTOM_SENSOR);
+                      PINASSIGN_CUSTOM_SENSOR,
+                      this->settingsHolder.customSensorMode);
     }
 
     IncuversHeatingSystem* getHeatModule() {
@@ -444,7 +446,7 @@ class IncuversSettingsHandler {
       piLink = String(piLink + F("&TA|") + String(GetIndicator(incHeat->isAlarmed(), false, false, true)));                                                                                                           // Temperature, alarms
       // CO2 system
       piLink = String(piLink + F("&CM|") + String(this->settingsHolder.CO2Mode, DEC));          // CO2, mode
-      piLink = String(piLink + F("&CustomSensor|") + String(this->settingsHolder.CustomSensorMode, DEC));          // CustomSensor, mode
+      piLink = String(piLink + F("&CustomSensor|") + String(this->settingsHolder.customSensorMode, DEC));          // CustomSensor, mode
       piLink = String(piLink + F("&CP|") + String(this->settingsHolder.CO2SetPoint * 100, 0));  // CO2, setpoint
       piLink = String(piLink + F("&CC|") + String(incCO2->getCO2Level() * 100, 0));             // CO2, reading
       piLink = String(piLink + F("&CS|") + GetIndicator(incCO2->isCO2Open(), incCO2->isCO2Stepping(), false, true));  // CO2, status
@@ -516,7 +518,7 @@ class IncuversSettingsHandler {
     void setCustomSensorMode(int mode) {
       Serial.print("setCustomSensorMode..."); delay(50);
       Serial.println(mode); delay(50);
-      this->settingsHolder.CustomSensorMode = mode;
+      this->settingsHolder.customSensorMode = mode;
       this->incHeat->UpdateCustomSensorMode(mode);
     }
     
