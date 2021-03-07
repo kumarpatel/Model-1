@@ -86,6 +86,13 @@ class IncuversPiLink {
                     Serial.println(F("Requested CO2 set point is outside of min/max"));
 #endif
                   }
+                } else if (strcmp(param, "CM") == 0) {
+                  Serial.print("CO2 Mode..."); delay(50);
+                  Serial.println(value); delay(50);
+                  this->incSet->setCO2Mode(value);
+#ifdef DEBUG_PILINK
+                  Serial.println(F("Updating CO2Mode..."));
+#endif
                 } else if (strcmp(param, "CustomSensor") == 0) {
                     this->incSet->setCustomSensorMode(value);
 #ifdef DEBUG_PILINK

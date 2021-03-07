@@ -51,7 +51,7 @@ struct SettingsStruct {
   byte heatMode;      // 0 = off, 1 = on
   float heatSetPoint;
   // CO2 settings
-  byte CO2Mode;       // 0 = off, 1 = read, 2 = maintain
+  byte CO2Mode;       // 0 = off, 1 = read, 2 = maintain, 3 = on
   float CO2SetPoint;
   // O2 settings
   byte O2Mode;        // 0 = off, 1 = read, 2 = maintain
@@ -327,6 +327,7 @@ class IncuversSettingsHandler {
         Serial.println(F("LoadSettings"));
       #endif
       int runMode = 0;
+      // ResetSettingsToDefaults();
       
       if (ReadHardwareSettings()) {
         if (VerifyEEPROMHeader((int)SETTINGS_ADDRS, false) == SETTINGS_IDENT_CURR) {

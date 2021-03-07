@@ -218,6 +218,15 @@ class IncuversCO2System {
         MakeSafeState();
         this->enabled = false;
         level = -100;
+      } else if (mode == 3) { // on
+      
+        digitalWrite(this->pinAssignment_Valve, HIGH);   // (solenoid open)
+        this->iSS->StartSensor();
+        this->enabled = true;
+        this->on = true;
+        this->started = true;
+        this->stepping = false;
+
       } else {
         this->enabled = true;
         this->iSS->StartSensor();
