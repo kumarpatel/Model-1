@@ -656,6 +656,7 @@ class IncuversSettingsHandler {
     }
 
     boolean HasPiLink() {
+      return settingsHardware.piSupport;
     }
 
     boolean HasLighting() {
