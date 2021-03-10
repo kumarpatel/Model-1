@@ -14,11 +14,28 @@ from tabulate import tabulate
 
 # SERIAL_PORT = '/dev/ttyUSB0'
 SERIAL_PORT = "/dev/cu.usbmodem101"
-DELAY = 4 # This is the time in seconds to wait between each loop.
+DELAY = 2 # This is the time in seconds to wait between each loop.
 PARAMS_UPDATE = [
-    { "CP": 1000 },
-    { "SS": 1 },
+    { "CM": 3 },
+    # { "SS": 1 },
 ]
+
+# SEQUENCE = [
+#     {
+#         time: 10,
+#         commands: [
+#             { "CM": 3 },
+#             { "SS": 1 },
+#         ]
+#     },
+#     {
+#         time: 20,
+#         commands: [
+#             { "CP": 1250 },
+#             { "SS": 1 },
+#         ]
+#     }
+# ]
 
 """
 .. module:: Message
@@ -329,7 +346,7 @@ class Sensors():
 #            if self.arduino_link.serial_connection.in_waiting:
                 try:
                     line = self.arduino_link.serial_connection.readline().rstrip()
-                    # print(line)
+                    print(line)
                     if self.checksum_passed(line):
                         if (self.verbosity == 1):
                             print("checksum passed")
@@ -514,18 +531,56 @@ if __name__ == '__main__':
         
         
         loop_index = 0
-        while True:
-            time.sleep(DELAY)
-            # print("trying...")
 
-            if loop_index <= 3 or not PARAMS_UPDATE:
-                prettify_data(mon.sensorframe)
-            else:
-                key_value = PARAMS_UPDATE.pop(0)
-                key = key_value.keys()[0]
-                value = key_value[key]
+
+        def wait(seconds):
+            for i in xrange(seconds,0,-1):
+                sys.stdout.write(str(i)+' ')
+                sys.stdout.flush()
+                time.sleep(1)
+        SEQUENCE = [
+            {
+                "stepName": "CO2 flood",
+                "timeToWaitAfterCommands": 10,
+                "commands": [
+                    { "CM": 3 },
+                    { "SS": 1 },
+                ]
+            },
+            {
+                "stepName": "MixGas flood",
+                "timeToWaitAfterCommands": 20,
+                "commands": [
+                    { "CP": 1250 },
+                    { "SS": 1 },
+                ]
+            }
+        ]
+        for step in SEQUENCE:
+            print(step["stepName"])
+
+            for cmd in step["commands"]:
+                key = cmd.keys()[0]
+                value = cmd[key]
+                print(key, value)
                 prepare_and_send_message(key, value)
+                time.sleep(3)
+            print("Waiting {} seconds...".format(step["timeToWaitAfterCommands"]))
+            # time.sleep(step["timeToWaitAfterCommands"])
+            wait(step["timeToWaitAfterCommands"])
 
-            # print(mon.arduino_link.serial_connection.readline())
-            loop_index += 1
+        # while True:
+        #     time.sleep(DELAY)
+        #     # print("trying...")
+
+        #     if loop_index <= 3 or not PARAMS_UPDATE:
+        #         prettify_data(mon.sensorframe)
+        #     else:
+        #         key_value = PARAMS_UPDATE.pop(0)
+        #         key = key_value.keys()[0]
+        #         value = key_value[key]
+        #         prepare_and_send_message(key, value)
+
+        #     # print(mon.arduino_link.serial_connection.readline())
+        #     loop_index += 1
         del mon

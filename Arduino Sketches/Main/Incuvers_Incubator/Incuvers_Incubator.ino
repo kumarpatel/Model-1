@@ -88,7 +88,8 @@
 //#define INCLUDE_O2_MODBUS true
 //#define INCLUDE_O2_ANALOG true
 #define INCLUDE_CO2 true
-#define INCLUDE_LIGHT false
+#define INCLUDE_LIGHT true
+#define INCLUDE_MIXGAS true
 
 // Hardwired settings
 #define PINASSIGN_ONEWIRE_BUS 4
@@ -144,6 +145,7 @@
 #endif
 
 #include "Env_Heat.h"
+#include "MixGas.h"
 #include "Incuvers_Settings.h"
 #include "Incuvers_UI.h"
 #include "Incuvers_PiLink.h"
@@ -151,7 +153,8 @@
 // Globals
 IncuversSettingsHandler* iSettings;
 IncuversHeatingSystem* iHeat;
-IncuversLightingSystem* iLight;
+// IncuversLightingSystem* iLight;
+MixGasSystem* iMixGas;
 IncuversCO2System* iCO2;
 IncuversO2System* iO2;
 IncuversPiLink* iPi;
@@ -179,8 +182,8 @@ void setup() {
   iHeat = new IncuversHeatingSystem();
   iSettings->AttachIncuversModule(iHeat);
 
-  iLight = new IncuversLightingSystem();
-  iSettings->AttachIncuversModule(iLight);
+  iMixGas = new MixGasSystem();
+  iSettings->AttachIncuversModule(iMixGas);
   
   iCO2 = new IncuversCO2System();
   iSettings->AttachIncuversModule(iCO2);
@@ -215,7 +218,7 @@ void loop() {
   iCO2->DoTick();
   iO2->DoTick();
   iHeat->DoQuickTick();
-  iLight->DoTick();
+  // iLight->DoTick();
   iUI->DoTick(); 
   iPi->DoTick();
 }

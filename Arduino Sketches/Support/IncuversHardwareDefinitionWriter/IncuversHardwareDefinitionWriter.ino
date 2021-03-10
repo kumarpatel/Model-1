@@ -130,7 +130,8 @@ void setup() {
   hardwareDefinition.piTxPin = 18;            // Default: 18
   // Lighting
   hardwareDefinition.lightingSupport = false; // Is there an internal lighting system?
-  hardwareDefinition.lightPin = 2;            // Default: 2 
+  // hardwareDefinition.lightPin = 2;            // Default: 2 Deprecated. DO NOT USE.
+  hardwareDefinition.mixGasPin = 2;            // Default: 2 
 }
 
 void loop() {

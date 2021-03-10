@@ -41,6 +41,7 @@ struct HardwareStruct {
   // Lighting
   bool lightingSupport;
   byte lightPin;
+  byte mixGasPin;
 };
 
 struct SettingsStruct {
@@ -57,13 +58,14 @@ struct SettingsStruct {
   byte O2Mode;        // 0 = off, 1 = read, 2 = maintain
   float O2SetPoint;
   // Lighting
-  byte lightMode;     // 0 = off, 1 = internal timing, 2 = external timing
+  byte lightMode;     // 0 = off, 1 = internal timing, 2 = external timing, 3 = on
+  byte mixGasMode;     // 0 = off, 1 = internal timing, 2 = external timing, 3 = on
   long millisOn;
   long millisOff;
+  long mixGasmillisOn;
+  long mixGasmillisOff;
   // Alarm settings
   byte alarmMode;     // 0 = off, 1 = report, 2 = alarm
-  
-  byte customSensorMode;       // 0 = off, 1 = read, 2 = maintain
 };
 
 struct VolatileValuesStruct {
@@ -87,9 +89,9 @@ class IncuversSettingsHandler {
   
     IncuversHeatingSystem* incHeat;
     IncuversLightingSystem* incLight;
+    MixGasSystem* incMixGas;
     IncuversCO2System* incCO2;
     IncuversO2System* incO2;
-    // CustomSensor* incCustomSensor;
     
     int personalityCount;
 
@@ -255,6 +257,7 @@ class IncuversSettingsHandler {
         Serial.println(settingsHolder.O2Mode);
         Serial.println(settingsHolder.O2SetPoint);
         Serial.println(settingsHolder.lightMode);
+        Serial.println(settingsHolder.mixGasMode);
         Serial.println(settingsHolder.millisOn);
         Serial.println(settingsHolder.millisOff);
         Serial.println(settingsHolder.alarmMode);
@@ -285,6 +288,12 @@ class IncuversSettingsHandler {
       this->settingsHolder.lightMode = 0;
       this->settingsHolder.millisOn =  60000;  // 14 hrs = 50400000 milliseconds
       this->settingsHolder.millisOff = 30000;  // 10 hrs = 36000000 milliseconds
+
+      // MixGas
+      this->settingsHolder.mixGasMode = 0;
+      this->settingsHolder.mixGasmillisOn =  60000;  // 14 hrs = 50400000 milliseconds
+      this->settingsHolder.mixGasmillisOff = 30000;  // 10 hrs = 36000000 milliseconds
+
       // Alarm
       this->settingsHolder.alarmMode = 2;
 
@@ -355,6 +364,9 @@ class IncuversSettingsHandler {
       if (this->settingsHolder.lightMode > 0) {
         this->personalityCount++;
       }
+      if (this->settingsHolder.mixGasMode > 0) {
+        this->personalityCount++;
+      }
       if (this->settingsHolder.CO2Mode > 0) {
         this->personalityCount++;
       }
@@ -380,9 +392,7 @@ class IncuversSettingsHandler {
                       this->settingsHolder.heatMode,
                       PINASSIGN_FAN,
                       this->settingsHolder.fanMode,
-                      this->settingsHolder.heatSetPoint,
-                      PINASSIGN_CUSTOM_SENSOR,
-                      this->settingsHolder.customSensorMode);
+                      this->settingsHolder.heatSetPoint);
     }
 
     IncuversHeatingSystem* getHeatModule() {
@@ -395,6 +405,18 @@ class IncuversSettingsHandler {
       this->incLight->SetupLighting(this->settingsHardware.lightPin,
                       this->settingsHardware.lightingSupport);
       this->incLight->UpdateLightDeltas(this->settingsHolder.millisOn, this->settingsHolder.millisOff);
+    }
+
+    void AttachIncuversModule(MixGasSystem* iMaxGas) {
+      this->incMixGas = iMaxGas;
+
+      this->incMixGas->SetupMixGas(this->settingsHardware.mixGasPin,
+                      this->settingsHardware.lightingSupport);
+      this->incMixGas->UpdateMixGasDeltas(this->settingsHolder.millisOn, this->settingsHolder.millisOff);
+    }
+
+    MixGasSystem* getMixGasModule() {
+      return this->incMixGas;
     }
 
     IncuversLightingSystem* getLightModule() {
@@ -447,7 +469,6 @@ class IncuversSettingsHandler {
       piLink = String(piLink + F("&TA|") + String(GetIndicator(incHeat->isAlarmed(), false, false, true)));                                                                                                           // Temperature, alarms
       // CO2 system
       piLink = String(piLink + F("&CM|") + String(this->settingsHolder.CO2Mode, DEC));          // CO2, mode
-      piLink = String(piLink + F("&CustomSensor|") + String(this->settingsHolder.customSensorMode, DEC));          // CustomSensor, mode
       piLink = String(piLink + F("&CP|") + String(this->settingsHolder.CO2SetPoint * 100, 0));  // CO2, setpoint
       piLink = String(piLink + F("&CC|") + String(incCO2->getCO2Level() * 100, 0));             // CO2, reading
       piLink = String(piLink + F("&CS|") + GetIndicator(incCO2->isCO2Open(), incCO2->isCO2Stepping(), false, true));  // CO2, status
@@ -460,6 +481,7 @@ class IncuversSettingsHandler {
       piLink = String(piLink + F("&OA|") + GetIndicator(incO2->isAlarmed(), false, false, true));               // CO2, alarms
       // Options
       piLink = String(piLink + F("&LM|") + String(this->settingsHolder.lightMode, DEC));        // Light Mode
+      piLink = String(piLink + F("&MG|") + String(this->settingsHolder.mixGasMode, DEC));        // MixGas Mode
       piLink = String(piLink + F("&LS|") + incLight->GetSerialAPIndicator());                   // Light System
       // Debugging
       piLink = String(piLink + F("&FMEM|") + String(freeMemory(), DEC));                          // Free memory
@@ -516,13 +538,7 @@ class IncuversSettingsHandler {
       this->settingsHolder.CO2Mode = mode;
       this->incCO2->UpdateMode(mode);
     }
-    void setCustomSensorMode(int mode) {
-      Serial.print("setCustomSensorMode..."); delay(50);
-      Serial.println(mode); delay(50);
-      this->settingsHolder.customSensorMode = mode;
-      this->incHeat->UpdateCustomSensorMode(mode);
-    }
-    
+
     float getCO2SetPoint() {
       return this->settingsHolder.CO2SetPoint;
     }
@@ -638,6 +654,15 @@ class IncuversSettingsHandler {
     void setLightMode(int mode) {
       this->settingsHolder.lightMode = mode;
       this->incLight->UpdateMode(mode);
+    }
+    
+    int getMixGasMode() {
+      return this->settingsHolder.mixGasMode;
+    }
+
+    void setMixGasMode(int mode) {
+      this->settingsHolder.mixGasMode = mode;
+      this->incMixGas->UpdateMode(mode);
     }
     
     boolean HasCO2Sensor() {

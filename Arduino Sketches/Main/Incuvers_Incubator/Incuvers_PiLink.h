@@ -93,11 +93,6 @@ class IncuversPiLink {
 #ifdef DEBUG_PILINK
                   Serial.println(F("Updating CO2Mode..."));
 #endif
-                } else if (strcmp(param, "CustomSensor") == 0) {
-                    this->incSet->setCustomSensorMode(value);
-#ifdef DEBUG_PILINK
-                    Serial.println(F("Requested CustomSensor mode"));
-#endif
                 } else if (strcmp(param, "OP") == 0) {
                   float newO2 = (float)value * 0.01;
                   if (newO2 > OO_MIN && newO2 < OO_MAX) {
@@ -128,6 +123,13 @@ class IncuversPiLink {
                   this->incSet->setFanMode(value);
 #ifdef DEBUG_PILINK
                   Serial.println(F("Updating FanMode..."));
+#endif
+                } else if (strcmp(param, "MG") == 0) {
+                  Serial.print("MixGasMode..."); delay(50);
+                  Serial.println(value); delay(50);
+                  this->incSet->setMixGasMode(value);
+#ifdef DEBUG_PILINK
+                  Serial.println(F("Updating MixGasMode..."));
 #endif
                 } else if (strcmp(param, "TM") == 0) {
                   Serial.print("HeatingMode..."); delay(50);
