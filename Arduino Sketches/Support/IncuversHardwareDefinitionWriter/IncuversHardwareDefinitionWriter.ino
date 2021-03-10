@@ -33,6 +33,7 @@ struct HardwareStruct {
   // Lighting
   bool lightingSupport;
   byte lightPin;
+  byte mixGasPin;
 };
 
 #include "OneWire.h"
