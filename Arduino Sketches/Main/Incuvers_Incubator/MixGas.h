@@ -72,6 +72,10 @@ class MixGasSystem {
       } else if (mode == 2) {
         this->enabled = true;
         this->useInternalTiming = false;
+      } else if (mode == 3) {
+        digitalWrite(this->pinAssignment, HIGH);
+        this->enabled = true;
+        this->useInternalTiming = false;
       } else {
         MakeSafeState();
         this->enabled = false;
