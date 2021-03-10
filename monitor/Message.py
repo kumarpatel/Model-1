@@ -13,8 +13,8 @@ import commands
 from tabulate import tabulate
 
 # SERIAL_PORT = '/dev/ttyUSB0'
-# SERIAL_PORT = "/dev/cu.usbmodem101"
-SERIAL_PORT = "/dev/ttyUSB0"
+SERIAL_PORT = "/dev/cu.usbmodem101"
+# SERIAL_PORT = "/dev/ttyUSB0"
 DELAY = 2 # This is the time in seconds to wait between each loop.
 PARAMS_UPDATE = [
     { "CM": 3 },
@@ -466,7 +466,7 @@ class Sensors():
 def prettify_data(sensor_data):
     values = sensor_data.values()
     headers = sensor_data.keys()
-    print(tabulate([headers, values], tablefmt="presto"))
+    return tabulate([headers, values], tablefmt="presto")
     
 
 if __name__ == '__main__':
@@ -538,6 +538,7 @@ if __name__ == '__main__':
         def wait(seconds):
             for i in xrange(seconds,0,-1):
                 sys.stdout.write(str(i)+' ')
+                # sys.stdout.write(prettify_data(mon.sensorframe)+' ')
                 sys.stdout.flush()
                 time.sleep(1)
        
