@@ -13,29 +13,31 @@ import commands
 from tabulate import tabulate
 
 # SERIAL_PORT = '/dev/ttyUSB0'
-SERIAL_PORT = "/dev/cu.usbmodem101"
+# SERIAL_PORT = "/dev/cu.usbmodem101"
+SERIAL_PORT = "/dev/ttyUSB0"
 DELAY = 2 # This is the time in seconds to wait between each loop.
 PARAMS_UPDATE = [
     { "CM": 3 },
     # { "SS": 1 },
 ]
-
-# SEQUENCE = [
-#     {
-#         time: 10,
-#         commands: [
-#             { "CM": 3 },
-#             { "SS": 1 },
-#         ]
-#     },
-#     {
-#         time: 20,
-#         commands: [
-#             { "CP": 1250 },
-#             { "SS": 1 },
-#         ]
-#     }
-# ]
+SEQUENCE = [
+        {
+            "stepName": "CO2 flood",
+            "timeToWaitAfterCommands": 10,
+            "commands": [
+                { "CM": 3 },
+                { "SS": 1 },
+            ]
+        },
+        {
+            "stepName": "MixGas flood",
+            "timeToWaitAfterCommands": 20,
+            "commands": [
+                { "CP": 1250 },
+                { "SS": 1 },
+            ]
+        }
+    ]
 
 """
 .. module:: Message
@@ -538,24 +540,7 @@ if __name__ == '__main__':
                 sys.stdout.write(str(i)+' ')
                 sys.stdout.flush()
                 time.sleep(1)
-        SEQUENCE = [
-            {
-                "stepName": "CO2 flood",
-                "timeToWaitAfterCommands": 10,
-                "commands": [
-                    { "CM": 3 },
-                    { "SS": 1 },
-                ]
-            },
-            {
-                "stepName": "MixGas flood",
-                "timeToWaitAfterCommands": 20,
-                "commands": [
-                    { "CP": 1250 },
-                    { "SS": 1 },
-                ]
-            }
-        ]
+       
         for step in SEQUENCE:
             print(step["stepName"])
 
